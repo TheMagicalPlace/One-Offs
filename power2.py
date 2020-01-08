@@ -5,6 +5,7 @@
 from math import sqrt
 import time
 import random
+from math import ceil
 
 from collections import defaultdict
 
@@ -25,17 +26,17 @@ class node:
 
     def find_by_gen(self,n,parent):
         i = parent+1
-        while i > 1: # once it dips below
+        while i > 1:  # once it dips below
+            i -= 1
             if i == 1:
                 yield 1
-            try:
-                if i**2 <= n and n !=1: # since its narrowed down, just use the highest value
-                    yield i
-                else:
-                    i = int(sqrt(n))+1 # if i is too high, this sets it to the max possible i value
-                i -= 1
-            except GeneratorExit:
-                raise GeneratorExit
+            elif i ** 2 <= n and n != 1:  # since its narrowed down, just use the highest value
+                yield i
+            else:
+                yield 1
+
+
+
 
 
 
@@ -51,7 +52,7 @@ def decompose(n,gen=True):
         return [iv]
 
     ne =  search_tree(root,iv,n,last_pot=None,gen=True,generation=1)
-    print("\n\n".join([f"\n{k} :".join([f"".join(str(l)) for l in root.gen[k]]) for k in sorted(root.gen)]))
+    #print("\n\n".join([f"\n{k} :".join([f"".join(str(l)) for l in root.gen[k]]) for k in sorted(root.gen)]))
 
     if ne:
         ne.reverse()
@@ -67,44 +68,30 @@ def search_tree(root : node,parent,next,last_pot = None,gen=True,generation=0):
     pot_branch = []
     last = None
     par = [parent]
+
     for child in childeren:
-        if child == last == 1:
-            if next == 1:
-                pot_branch = [1]
-                break
+        if next == 0:
+            break
+        elif child == 1 :
+            if next <= 3:
+                pot_branch = [1 for _ in range(next)]
             else:
-                pot_branch = [_ for _ in range(next)]
                 break
         else:
-            last = next
-            n = next - child**2
-            if n < 0: break
+            n = next-child**2
+            if n <= 0: continue
+            pot = search_tree(root, child, n, generation=1 + generation)
 
-        if pot_branch:
-            print(generation,pot_branch,child)
-
-        if n <=3 and n > 0:
-            pot = [child]+[1 for i in range(n)]
-            pot_branch = pot
-        elif child == 1:
-            if last_pot and len(last_pot) > n:
-                pot = last_pot
+            if not pot_branch:
+                pot_branch = pot
+            elif len(pot_branch) < len(pot):
+                pot_branch = pot
+                break
             else:
-                pot_branch =[child for n in range(n)]
+                print(pot_branch)
                 break
-        else:
-            pot = search_tree(root, child, n, last_pot=pot_branch,generation=1+generation)
 
-        if not pot_branch:
-            pot_branch = pot
-        elif pot_branch and len(pot) <= len(pot_branch):
-            if len(pot) < len(pot_branch):
-                pot_branch = pot
-            elif pot[0] > pot_branch[0]:
-                pot_branch = pot
-        elif pot_branch:
-            if len(pot_branch) < len(pot):
-                break
+
 
 
     par = par + pot_branch
@@ -116,8 +103,8 @@ if __name__ == '__main__':
     td = time.time()
     print(f'decompose {decompose(188739465)}')
     #print(sum([x**2 for x in decompose(15)]))
-    print(decompose(4 *9 *82))
-    for i in range(-1,0,-1):
+    #print(decompose(4 *9 *82))
+    for i in range(0,1001,1):
         t0 = time.time()
         res =  decompose(i)
 
@@ -127,7 +114,7 @@ if __name__ == '__main__':
         assert res == i
     print(f'Total Time : {time.time()-td}\n Runs Per Second : {(time.time()-td)/100000}')
 
-if __name__ == 'mem':
+if __name__ == '__main__':
     from matplotlib import pyplot as plt
     import matplotlib.gridspec as gridspec
     from numpy import log10,log2
