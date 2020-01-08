@@ -36,14 +36,22 @@ class CPPVector():
 
     def __init__(self,data: List[Any]):
         self.length = 0
-        self.snode = self.node(data[0],self)
-        lastnode = self.snode
-        for datum in data[1:]:
-            lastnode.child = self.node(datum,self)
-            lastnode = lastnode.child
-        self.enode = lastnode
+        if not isinstance(data, list):
+            self.snode = self.node(data,self)
+            self.enode = self.snode
+        else:
+            self.snode = self.node(data[0],self)
+            lastnode = self.snode
+            if not isinstance(data,list):
+                lastnode
+            for datum in data[1:]:
+                lastnode.child = self.node(datum,self)
+                lastnode = lastnode.child
+            self.enode = lastnode
 
     def __getitem__(self, index):
+        if isinstance(index,slice):
+            return self._get_many(index.start,index.stop,index.step)
         if index < 0:
             index = self.length + index
         lnode = self.snode
@@ -76,7 +84,11 @@ class CPPVector():
         self.enode.child = self.node(value,self)
         self.enode = self.enode.child
 
-    def pop(self,index):
+    def pop(self,start,end=None):
+        if end is not None:
+            return self._pop_many(start,end)
+        else:
+            index = start
         lnode = self.snode
 
         while lnode.pos <= index:
@@ -85,6 +97,7 @@ class CPPVector():
                 tmp = self.snode._datum
                 self.snode = self.snode.child
                 self.reassign_pos(self.snode,0)
+                self.length -= 1
                 return tmp
 
             # if the child node is the end node, return it and make the parent the new end node
@@ -105,7 +118,22 @@ class CPPVector():
         else:
             raise IndexError
 
+    def _pop_many(self,start,end):
+        i = start+1
+        new_list = CPPVector(self.pop(start))
+        while i != end:
+            new_list.append(self.pop(start))
+            i += 1
+        return new_list
 
+    def _get_many(self,start,end,step=1):
+        new = CPPVector(self[start])
+        if step is None: step =1
+        i = start + step
+        while i < end:
+            new.append(self[i])
+            i +=2
+        return new
 
     def __str__(self):
         pass
@@ -122,5 +150,7 @@ if __name__ == '__main__':
     t2[2] = t1[2]
     t1[2] = 22
     t = v1.pop(1)
+    t2 = v2.pop(0,3)
+    t3 = v1[1:3]
     print(v2[4].pos,v1[4].pos,v2 is v3)
     print(v2)
