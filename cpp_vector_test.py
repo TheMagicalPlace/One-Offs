@@ -93,6 +93,24 @@ class CPPVector():
                 self.append(olnode)
                 return self
 
+    def __len__(self):
+        return self.length
+
+    def __iter__(self):
+        try:
+            return next(self)
+        except StopIteration:
+            return
+
+    def __next__(self):
+        cnode = self.snode
+        while True:
+            while cnode != None:
+                yield cnode._datum
+                cnode = cnode.child
+            else:
+                return StopIteration
+
     def append(self,value):
         if isinstance(value,type(self.snode)):
             self.enode.child = self.node(value._datum,self)
@@ -169,5 +187,9 @@ if __name__ == '__main__':
     t2 = v2.pop(0,3)
     t3 = v1[1:3]
     t3+=t2
+    for t in t3:
+        print(t)
+    for t in t3:
+        print(t)
     print(v2[4].pos,v1[4].pos,v2 is v3)
     print(v2)
