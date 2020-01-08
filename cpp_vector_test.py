@@ -80,8 +80,24 @@ class CPPVector():
         else:
             raise IndexError
 
+    def __iadd__(self, other):
+        if isinstance(other,list) or isinstance(other,tuple):
+            for datum in other:
+                self.append(datum)
+        elif isinstance(other,type(self)):
+            olnode= other.snode
+            while olnode.child is not None:
+                self.append(olnode)
+                olnode = olnode.child
+            else:
+                self.append(olnode)
+                return self
+
     def append(self,value):
-        self.enode.child = self.node(value,self)
+        if isinstance(value,type(self.snode)):
+            self.enode.child = self.node(value._datum,self)
+        else:
+            self.enode.child = self.node(value,self)
         self.enode = self.enode.child
 
     def pop(self,start,end=None):
@@ -152,5 +168,6 @@ if __name__ == '__main__':
     t = v1.pop(1)
     t2 = v2.pop(0,3)
     t3 = v1[1:3]
+    t3+=t2
     print(v2[4].pos,v1[4].pos,v2 is v3)
     print(v2)
