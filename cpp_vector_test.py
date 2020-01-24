@@ -169,14 +169,58 @@ class CPPVector():
             i +=2
         return new
 
+    def __reversed__(self):
+        """reverses the list in place"""
+        self.snode,self.enode = self.enode,self.snode
+        node = self.enode
+        c2node = node.child.child
+        while node.child != self.snode:
+            cnode = node.child
+            c2node = node.child.child
+            cnode.child = node
+            node = node.child
+
+    def insert(self,index,value):
+        """ inserts a list item before the item at the index position """
+        if isinstance(value,type(self.snode)):
+            value = value._datum
+        if index == 0:
+            tmp = self.snode
+            self.snode = self.node(value,self)
+            self.snode.child = tmp
+            self.reassign_pos(self.snode,0)
+        elif index == self.length - 1:
+            self.append(value)
+        else:
+            lnode  = self.snode
+            while lnode.child.pos != index:
+                lnode = lnode.child
+            else:
+                oldchild = lnode.child
+                lnode.child =self.node(value,self)
+                lnode.child.child = oldchild
+                self.reassign_pos(lnode.child,index)
+
+    def sort(self,key=None):
+        node = self.snode
+        while node.child is not None:
+            node2 = node.child
+            while node2 is not None:
+                if node._datum < node2._datum:
+                    node._datum,node2._datum = node2._datum,node._datum
+                node2 = node2.child
+            node = node.child
+
     def __str__(self):
-        pass
+        return str([node for node in self])
 
 
 if __name__ == '__main__':
     v1 = CPPVector([1,2,'bepis',1,1])
-    v2 = CPPVector([2,2,2,2,2])
+    v2 = CPPVector([11,8,9,2,12,12,5,6,10])
     v3 = v2
+    v2.sort()
+    print(v2)
     v3[2] = v1[2]
     v1[2] = 'yeet'
     t1 = [1,2,3]
@@ -191,5 +235,5 @@ if __name__ == '__main__':
         print(t)
     for t in t3:
         print(t)
-    print(v2[4].pos,v1[4].pos,v2 is v3)
+    print(v2[1],v1[3],v2 is v3)
     print(v2)
